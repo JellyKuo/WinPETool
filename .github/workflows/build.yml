@@ -23,7 +23,8 @@ jobs:
           start /wait adksetup.exe /q /features OptionId.DeploymentTools
           start /wait adkwinpesetup.exe /q /features OptionId.WindowsPreinstallationEnvironment
       - name: Prepare Deployment Environment
-        run: "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
+        run: |
+          "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
       - name: Copy PE
         run: copype amd64 C:\WinPE_amd64
       - name: Dism Mount Image
