@@ -11,7 +11,9 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
+    defaults:
+      run:
+        shell: cmd
     steps:
       - uses: actions/checkout@v3
       - name: Capture PWD
