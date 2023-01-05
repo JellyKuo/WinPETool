@@ -24,8 +24,8 @@ jobs:
         run: |
           curl -L -o adksetup.exe https://go.microsoft.com/fwlink/?linkid=2165884
           curl -L -o adkwinpesetup.exe https://go.microsoft.com/fwlink/?linkid=2166133
-          start /wait adksetup.exe /q /features OptionId.DeploymentTools
-          start /wait adkwinpesetup.exe /q /features OptionId.WindowsPreinstallationEnvironment
+          start /wait adksetup.exe /q /log log/adksetup.log /features OptionId.DeploymentTools
+          start /wait adkwinpesetup.exe /q /log log/adkwinpesetup.log /features OptionId.WindowsPreinstallationEnvironment
       #- name: Prepare Deployment Environment
       #  run: |
       #    FOR /F %i IN ('cd') DO set SRCDIR=%i
@@ -33,15 +33,16 @@ jobs:
       - name: Copy PE
         run: |
           "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\DandISetEnv.bat"
-          copype amd64 C:\WinPE_amd64
+          copype amd64 C:\WinPE_amd64 > ${{ github.workspace }}/log/copype.log
+          dir C:\WinPE_amd64
       - name: Dism Mount Image
         run: Dism /Mount-Image /ImageFile:"C:\WinPE_amd64\media\sources\boot.wim" /index:1 /MountDir:"C:\WinPE_amd64\mount"
       - name: Add Optional Packages
         run: |
-          Dism /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-WMI.cab" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-SecureStartup.cab"
-          Dism /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-NetFx.cab"
-          Dism /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-Scripting.cab"
-          Dism /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-PowerShell.cab"
+          Dism /LogPath:"${{ github.workspace }}/log/dism-addpkg-winpe-wmi-winpe-securestartup.log" /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-WMI.cab" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-SecureStartup.cab"
+          Dism /LogPath:"${{ github.workspace }}/log/dism-addpkg-winpe-netfx.log" /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-NetFx.cab"
+          Dism /LogPath:"${{ github.workspace }}/log/dism-addpkg-winpe-scripting.log" /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-Scripting.cab"
+          Dism /LogPath:"${{ github.workspace }}/log/dism-addpkg-winpe-powershell.log" /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-PowerShell.cab"
       - name: Edit startnet.cmd
         run: |
           echo powercfg /s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c>>C:\WinPE_amd64\mount\Windows\System32\startnet.cmd
@@ -62,6 +63,12 @@ jobs:
         with:
           name: winpe
           path: C:\WinPE_amd64\WinPE_amd64.iso
+      - uses: actions/upload-artifact@v3
+        with:
+          name: log
+          if: always()
+          path: |
+            log/**
           
           
           
