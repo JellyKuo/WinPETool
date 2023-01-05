@@ -36,7 +36,10 @@ jobs:
           copype amd64 C:\WinPE_amd64 > ${{ github.workspace }}/log/copype.log
           dir C:\WinPE_amd64
       - name: Dism Mount Image
-        run: Dism /Mount-Image /ImageFile:"C:\WinPE_amd64\media\sources\boot.wim" /index:1 /MountDir:"C:\WinPE_amd64\mount"
+        run: |
+          dir C:\WinPE_amd64
+          dir C:\WinPE_amd64\media
+          Dism /LogPath:"${{ github.workspace }}/log/dism-mount.log" /Mount-Image /ImageFile:"C:\WinPE_amd64\media\sources\boot.wim" /index:1 /MountDir:"C:\WinPE_amd64\mount"
       - name: Add Optional Packages
         run: |
           Dism /LogPath:"${{ github.workspace }}/log/dism-addpkg-winpe-wmi-winpe-securestartup.log" /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-WMI.cab" /PackagePath:"C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-SecureStartup.cab"
@@ -64,9 +67,9 @@ jobs:
           name: winpe
           path: C:\WinPE_amd64\WinPE_amd64.iso
       - uses: actions/upload-artifact@v3
+        if: always()
         with:
           name: log
-          if: always()
           path: |
             log/**
           
