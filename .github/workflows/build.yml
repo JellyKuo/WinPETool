@@ -16,6 +16,10 @@ jobs:
         shell: cmd
     steps:
       - uses: actions/checkout@v3
+      - name: Current user
+        run: echo %username%
+      - name: Create dir
+        run: mkdir C:\Windows\System32\test
       - name: Download and Install Windows ADK & WinPE
         run: |
           curl -L -o adksetup.exe https://go.microsoft.com/fwlink/?linkid=2165884
